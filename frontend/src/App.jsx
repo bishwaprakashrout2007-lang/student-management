@@ -78,7 +78,7 @@ function App() {
               <h2>No Properties Found</h2>
               <p>Try adjusting your search filters to find what you're looking for.</p>
             </div>
-          )}
+          )} 
         </div>
       </main>
     </div>
