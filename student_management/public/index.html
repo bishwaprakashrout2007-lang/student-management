@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SMS - Student Management System</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- ChartJS -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- LOGIN SCREEN -->
+  <div id="login-screen" class="screen active">
+    <div class="login-container">
+      <div class="login-card">
+        <div class="login-header">
+          <i class="fa-solid fa-graduation-cap logo-icon"></i>
+          <h1>Admin Portal</h1>
+          <p>Sign in to manage your student directory</p>
+        </div>
+        <form id="login-form">
+          <div class="form-group">
+            <label for="login-username"><i class="fa-solid fa-user"></i> Username</label>
+            <input type="text" id="login-username" required placeholder="Enter username">
+          </div>
+          <div class="form-group">
+            <label for="login-password"><i class="fa-solid fa-lock"></i> Password</label>
+            <input type="password" id="login-password" required placeholder="Enter password">
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN APP CONTAINER -->
+  <div id="app-screen" class="screen">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <i class="fa-solid fa-graduation-cap sidebar-logo"></i>
+        <span>SMS Admin</span>
+      </div>
+      <nav class="sidebar-nav">
+        <button id="nav-overview" class="nav-link active" onclick="switchView('overview')">
+          <i class="fa-solid fa-chart-simple"></i> Overview
+        </button>
+        <button id="nav-manage" class="nav-link" onclick="switchView('manage')">
+          <i class="fa-solid fa-users-gear"></i> Manage Students
+        </button>
+      </nav>
+      <div class="sidebar-footer">
+        <button onclick="logout()" class="btn btn-danger-outline btn-block">
+          <i class="fa-solid fa-right-from-bracket"></i> Logout
+        </button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <!-- HEADER -->
+      <header class="content-header">
+        <div class="header-info">
+          <h2 id="view-title">Dashboard Overview</h2>
+          <p id="view-subtitle">Welcome back, admin</p>
+        </div>
+        <div class="header-actions">
+          <span class="user-badge"><i class="fa-solid fa-circle-user"></i> <span id="admin-name">bishwa</span></span>
+        </div>
+      </header>
+
+      <!-- OVERVIEW VIEW -->
+      <div id="view-overview" class="view-panel active">
+        <div class="stats-grid">
+          <div class="stat-card stat-total-students">
+            <div class="stat-icon"><i class="fa-solid fa-user-graduate"></i></div>
+            <div class="stat-info">
+              <h3>Total Students</h3>
+              <p id="stat-students-count">0</p>
+            </div>
+          </div>
+          <div class="stat-card stat-total-classes">
+            <div class="stat-icon"><i class="fa-solid fa-school"></i></div>
+            <div class="stat-info">
+              <h3>Total Classes</h3>
+              <p id="stat-classes-count">0</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-details">
+          <div class="panel chart-panel">
+            <h3><i class="fa-solid fa-chart-pie"></i> Class Distribution</h3>
+            <div class="chart-container">
+              <canvas id="classChart"></canvas>
+            </div>
+          </div>
+          <div class="panel recent-panel">
+            <h3><i class="fa-solid fa-clock-rotate-left"></i> Recent Additions</h3>
+            <ul id="recent-list" class="recent-list">
+              <!-- Dynamically populated -->
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- MANAGE STUDENTS VIEW -->
+      <div id="view-manage" class="view-panel">
+        <div class="action-bar">
+          <div class="search-box">
+            <select id="search-by" class="form-select">
+              <option value="Name">Name</option>
+              <option value="Class">Class</option>
+              <option value="Mobile">Mobile</option>
+              <option value="ID">ID</option>
+            </select>
+            <input type="text" id="search-term" placeholder="Type search term...">
+            <button onclick="searchStudents()" class="btn btn-info"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+            <button onclick="loadAllStudents()" class="btn btn-secondary"><i class="fa-solid fa-rotate-left"></i> Show All</button>
+          </div>
+          <button onclick="openModal('add')" class="btn btn-success"><i class="fa-solid fa-plus"></i> Add New Student</button>
+        </div>
+
+        <div class="table-container panel">
+          <table class="students-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Photo</th>
+                <th>Name</th>
+                <th>Class</th>
+                <th>Email</th>
+                <th>Mobile</th>
+                <th>Gender</th>
+                <th>DOB</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="students-table-body">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- STUDENT MODAL (ADD / EDIT) -->
+  <div id="student-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-title">Add Student Details</h3>
+        <button onclick="closeModal()" class="close-btn">&times;</button>
+      </div>
+      <form id="student-form">
+        <input type="hidden" id="student-form-id">
+        <div class="modal-grid">
+          <div class="form-group">
+            <label for="form-name">Full Name *</label>
+            <input type="text" id="form-name" required placeholder="Enter full name">
+          </div>
+          <div class="form-group">
+            <label for="form-class">Class *</label>
+            <select id="form-class" required class="form-select">
+              <option value="">Select Class</option>
+              <option value="12th">12th</option>
+              <option value="B.Sc">B.Sc</option>
+              <option value="B.Tech">B.Tech</option>
+              <option value="BCA">BCA</option>
+              <option value="BBA">BBA</option>
+              <option value="MCA">MCA</option>
+              <option value="MBA">MBA</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="form-email">Email *</label>
+            <input type="email" id="form-email" required placeholder="email@domain.com">
+          </div>
+          <div class="form-group">
+            <label for="form-mobile">Mobile *</label>
+            <input type="tel" id="form-mobile" required placeholder="10-digit number">
+          </div>
+          <div class="form-group">
+            <label for="form-gender">Gender *</label>
+            <select id="form-gender" required class="form-select">
+              <option value="">Select Gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="form-dob">Date of Birth *</label>
+            <input type="date" id="form-dob" required>
+          </div>
+          <div class="form-group full-width">
+            <label for="form-address">Address</label>
+            <input type="text" id="form-address" placeholder="Enter residential address">
+          </div>
+          <div class="form-group full-width">
+            <label for="form-image">Profile Photo</label>
+            <div class="file-upload-box">
+              <input type="file" id="form-image" accept="image/*" onchange="previewImage(this)">
+              <div id="image-preview" class="image-preview">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+                <span>Choose photo file...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" onclick="closeModal()" class="btn btn-secondary">Cancel</button>
+          <button type="submit" id="save-btn" class="btn btn-primary">Save Record</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- DYNAMIC TOAST NOTIFICATION -->
+  <div id="toast" class="toast"></div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
