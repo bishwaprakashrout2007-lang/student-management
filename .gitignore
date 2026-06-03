@@ -1,0 +1,19 @@
+# Root .gitignore
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.db
+*.db.bak
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Environment
+.env
+
+# OS
+.DS_Store
+Thumbs.db
