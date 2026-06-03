@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: student-management-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: MONGO_URI
+        sync: false   # You must set this manually in Render dashboard (keeps it secret)
+      - key: NODE_VERSION
+        value: "20"
+      - key: FRONTEND_URL
+        sync: false   # Set this to your Vercel frontend URL after deploying frontend
