@@ -66,7 +66,15 @@ app.use('/uploads', express.static(uploadDir));
 // ─── Connect to MongoDB ───────────────────────────────────────────────────────
 async function initDB() {
   try {
-    const client = new MongoClient(MONGO_URI);
+    const client = new MongoClient(MONGO_URI, {
+      // Ensure TLS is used and tighten timeouts to fail fast when handshake fails
+      tls: true,
+      connectTimeoutMS: 10000,
+      serverSelectionTimeoutMS: 10000,
+      appName: 'student-management-backend',
+      family: 4
+    });
+
     await client.connect();
     console.log('✅ Connected successfully to MongoDB Atlas');
 
@@ -89,7 +97,18 @@ async function initDB() {
       console.log('Seeded student_id sequence counter');
     }
   } catch (err) {
-    console.error('❌ MongoDB Connection Failure:', err.message);
+    // More verbose error output for TLS / handshake diagnostics
+    console.error('❌ MongoDB Connection Failure:');
+    console.error('Error message :', err.message);
+    if (err.code) console.error('Error code    :', err.code);
+    if (err.stack) console.error(err.stack);
+
+    console.error('\nQuick checks:');
+    console.error('- Run `node -v` and ensure Node is >= 16 (preferably 18+)');
+    console.error('- Verify outbound network allows TLS to Atlas (ports 443/27017)');
+    console.error('- If behind a proxy/firewall, check TLS interception or proxy settings');
+    console.error('- Try using a local MongoDB URI or different network to isolate the issue');
+
     process.exit(1);
   }
 }
